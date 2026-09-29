@@ -24,28 +24,36 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Vaadin Server Dependency -->
+        <!-- Standard Web Servlet API (Fixes javax.servlet packages missing errors) -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Vaadin 8 Core Server Module -->
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-server</artifactId>
-            <version>7.7.17</version>
+            <version>8.14.3</version>
         </dependency>
 
-        <!-- Vaadin Client Compiled Dependency -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-client-compiled</artifactId>
-            <version>7.7.17</version>
-        </dependency>
-
-        <!-- Vaadin Themes Dependency -->
+        <!-- Vaadin 8 Core Themes Module -->
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-themes</artifactId>
-            <version>7.7.17</version>
+            <version>8.14.3</version>
         </dependency>
 
-        <!-- Apache Commons BeanUtils for data mapping -->
+        <!-- Vaadin 7 Compatibility Layer (Fixes com.vaadin.v7.* packages missing errors) -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-compatibility-server</artifactId>
+            <version>8.14.3</version>
+        </dependency>
+
+        <!-- Apache Commons BeanUtils for data mapping utilities -->
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
