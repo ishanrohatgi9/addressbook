@@ -1,69 +1,178 @@
-Addressbook Tutorial
-====================
+# AddressBook - CI/CD Pipeline with Jenkins
 
-This tutorial teaches you some of the basic concepts in [Vaadin Framework](https://vaadin.com). It is meant to be
-a fast read for learning how to get started - not an example on how application should be
-designed. Please note this example uses and requires Java 8 to work.
+A Java web application deployed through an end-to-end CI/CD pipeline using Jenkins.
 
-![Addressbook Screenshot](addressbook_screenshot.png "Addressbook Screenshot")
+The application is built with Maven, tested with JUnit, packaged as a WAR file and deployed to Apache Tomcat through separate Jenkins CI and CD jobs.
 
+## What I built
 
-Running the example from the command line
--------------------
-```
-$ mvn jetty:run
-```
+The project uses Jenkins to automate the application delivery process:
 
-Open [http://localhost:8080/](http://localhost:8080/)
+GitHub
+   |
+   v
+Jenkins Controller
+   |
+   +----------------------+
+   |                      |
+   v                      v
+CI Agent                CD Agent
+   |                      |
+   |-- Checkout           |
+   |-- Compile            |
+   |-- Test               |
+   |-- Package            |
+   |                      |
+   +---- addressbook.war -+
+                          |
+                          v
+                       Tomcat
+                          |
+                          v
+                    Running Application
 
+The CI and CD stages are separated so that the deployment job uses the WAR artifact produced by the build instead of rebuilding the application.
 
-Importing in IntelliJ IDEA 14
---------------------
-These instructions were tested on IntelliJ IDEA 14 CE. You can get it from https://www.jetbrains.com/idea/
+## CI Pipeline
 
-To get the project up and running in IDEA, do:
-- File -> New -> Project from Version Control -> Git
-- The URL to use is https://github.com/vaadin/addressbook.git
-- If you get a message about "Non-managed pom.xml file found". Choose "Add as Maven Project"
-- If you get a message about no JDK or SDK being selected. Choose "Configure" and select your installed JDK. You can also set the JDK using File -> Project Structure
-- To start the project, find the "Maven Projects" tab on the right hand side of the screen and navigate to
-  - Vaadin Web Application -> Plugins -> jetty -> jetty:run
-  - Click the play button or right click and select Run (Select Debug instead to run in debug mode)
+The CI side is divided into four Jenkins Freestyle jobs:
 
-You should now have a Jetty server running on localhost:8080. Navigate to http://localhost:8080 to play with the application
+1. Checkout
+2. Compile
+3. Test
+4. Package
 
-Importing in NetBeans 8
---------------------
-These instructions were tested on NetBeans 8.0.2. You can get it from https://www.netbeans.org
+The package job creates:
 
-To checkout and run the project in NetBeans, do:
-- Team -> Git -> Clone
-- Set repository URL to https://github.com/vaadin/addressbook.git
-- Finish
-- Right click the imported project (Vaadin Addressbook Application) and select Run
-- Select GlassFish Server 4.1 -> Remember in Current IDE Session -> OK
+    target/addressbook.war
 
-You should now have a GlassFish server running on localhost:8080 and a browser tab should also be automatically opened with this location
+The WAR file is then archived by Jenkins and used by the deployment job.
 
-Importing in Eclipse
---------------------
-These instructions were tested on Eclipse IDE for Java EE Developers Luna SR2. You can get it from http://eclipse.org/downloads/
+## CD Pipeline
 
-To checkout and run the project in Eclipse, do:
-- File -> Import...
-- Check out Maven Projects from SCM
-- Choose Git from SCM menu
-  - If you do not see "Git" in the SCM menu, click "Find more SCM connectors in the m2e Marketplace" and install "m2e-egit". Restart Eclipse and start over.
-- Set the repository URL to https://github.com/vaadin/addressbook.git
-- Right click the imported "addressbook" and choose Run As -> Maven Build...
-  - Set the goal to "jetty:run" and click "Run"
+The deployment job:
 
-You should now have a Jetty server running on localhost:8080. Navigate to [http://localhost:8080/](http://localhost:8080/) to play with the application
+1. Retrieves the archived WAR from Jenkins
+2. Copies it to the deployment server
+3. Removes the previous application version
+4. Deploys the new WAR to Apache Tomcat
+5. Checks the application endpoint
+6. Marks the deployment successful after receiving HTTP 200
 
-To use the built in server adapters of Eclipse, instead of doing "Run As -> Maven Build..." you can do
-- Run As -> Run on Server
-- Select the server you want to run on, e.g. Apache Tomcat 8 and click ok
-- *Do not use the suggested J2EE Preview server* as it is outdated, deprecated and does not support Servlet 3, which is required for this application
-# addressbook-pipeline
-# addressbook-pipeline
-# addressbook-pipeline
+## Application
+
+The application is a Java AddressBook web application.
+
+It contains:
+
+- Contact management classes
+- AddressBook logic
+- JUnit tests
+- Web UI
+- Maven build configuration
+
+The application is packaged as a WAR and deployed under:
+
+    /addressbook/
+
+## Technologies
+
+- Java
+- Maven
+- JUnit
+- Git
+- GitHub
+- Jenkins
+- Jenkins Freestyle Jobs
+- Apache Tomcat
+- Linux
+- Bash
+- CI/CD
+
+## Jenkins Jobs
+
+| Job | Purpose |
+|---|---|
+| addressbook-ci-1-checkout | Checkout source code from GitHub |
+| addressbook-ci-2-compile | Compile the Java application |
+| addressbook-ci-3-test | Run JUnit tests |
+| addressbook-ci-4-package | Build and archive the WAR |
+| addressbook-cd | Deploy the WAR to Tomcat |
+
+## Testing
+
+The test stage runs the application's JUnit test suite through Maven.
+
+Example result:
+
+    Tests run: 5
+    Failures: 0
+    Errors: 0
+    Skipped: 0
+
+## Deployment Verification
+
+The CD job performs an HTTP check after deployment rather than assuming that copying the WAR was successful.
+
+Example:
+
+    Attempt 1: HTTP 404
+    Attempt 2: HTTP 404
+    ...
+    Attempt 5: HTTP 200
+
+    DEPLOYMENT VERIFIED
+
+This allows the Jenkins job to fail if the application does not become available.
+
+## Screenshots
+
+### Jenkins Pipeline
+
+![Jenkins Pipeline](docs/jenkins-pipeline.png)
+
+### Test Results
+
+![Test Results](docs/test-results.png)
+
+### WAR Artifact
+
+![Build Artifact](docs/build-artifact.png)
+
+### Deployment
+
+![Deployment](docs/deployment.png)
+
+### Application
+
+![AddressBook](addressbook_screenshot.png)
+
+## Project Structure
+
+    addressbook/
+    ├── src/
+    │   ├── main/
+    │   └── test/
+    ├── pom.xml
+    ├── .gitignore
+    ├── jenkins/
+    ├── deployment/
+    └── docs/
+
+## What I learned
+
+- Configuring Jenkins Controller and agents
+- Running Jenkins jobs on specific agents
+- Using Maven for Java builds
+- Running automated tests through Jenkins
+- Creating and archiving WAR artifacts
+- Passing artifacts between Jenkins jobs
+- Deploying applications to Apache Tomcat
+- Adding deployment verification to a CI/CD workflow
+- Separating CI and CD responsibilities
+
+## Future Improvements
+
+The current implementation uses Jenkins Freestyle jobs to make each stage of the CI/CD process visible.
+
+The next step is to convert the same workflow to a Jenkinsfile and implement the pipeline as code.
