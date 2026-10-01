@@ -6,31 +6,34 @@ The application is built with Maven, tested with JUnit, packaged as a WAR file a
 
 ## What I built
 
-The project uses Jenkins to automate the application delivery process:
-
-GitHub
-   |
-   v
+The project uses Jenkins to automate delivery process:
+```text
+Developer
+    |
+    v
+  GitHub
+    |
+    v
 Jenkins Controller
-   |
-   +----------------------+
-   |                      |
-   v                      v
-CI Agent                CD Agent
-   |                      |
-   |-- Checkout           |
-   |-- Compile            |
-   |-- Test               |
-   |-- Package            |
-   |                      |
-   +---- addressbook.war -+
-                          |
-                          v
-                       Tomcat
-                          |
-                          v
-                    Running Application
-
+    |
+    +------------------+
+    |                  |
+    v                  v
+ CI Agent           CD Agent
+    |                  |
+    |-- Checkout       |
+    |-- Compile       |
+    |-- Test          |
+    |-- Package       |
+    |                  |
+    +-- addressbook.war
+                       |
+                       v
+                    Tomcat
+                       |
+                       v
+               Running Application
+```
 The CI and CD stages are separated so that the deployment job uses the WAR artifact produced by the build instead of rebuilding the application.
 
 ## CI Pipeline
@@ -103,25 +106,18 @@ The application is packaged as a WAR and deployed under:
 
 The test stage runs the application's JUnit test suite through Maven.
 
-Example result:
+Latest successful run:
 
-    Tests run: 5
-    Failures: 0
-    Errors: 0
-    Skipped: 0
+Tests run: 5
+Failures: 0
+Errors: 0
+Skipped: 0
 
 ## Deployment Verification
 
-The CD job performs an HTTP check after deployment rather than assuming that copying the WAR was successful.
+The CD job performs an HTTP check after deployment.
 
-Example:
-
-    Attempt 1: HTTP 404
-    Attempt 2: HTTP 404
-    ...
-    Attempt 5: HTTP 200
-
-    DEPLOYMENT VERIFIED
+The deployment was verified with an HTTP 200 response.
 
 This allows the Jenkins job to fail if the application does not become available.
 
