@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://apache.org">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.example</groupId>
@@ -13,54 +13,61 @@
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <vaadin.version>8.14.3</vaadin.version>
   </properties>
 
-      <dependencies>
-        <!-- JUnit 5 for testing -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.10.2</version>
-            <scope>test</scope>
-        </dependency>
+  <dependencies>
+    <!-- JUnit 5 for testing -->
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.10.2</version>
+        <scope>test</scope>
+    </dependency>
 
-        <!-- Standard Web Servlet API (Fixes javax.servlet packages missing errors) -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
-        </dependency>
+    <!-- Standard Web Servlet API -->
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <version>3.1.0</version>
+        <scope>provided</scope>
+    </dependency>
 
-        <!-- Vaadin 8 Core Server Module -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-server</artifactId>
-            <version>8.14.3</version>
-        </dependency>
+    <!-- Vaadin 8 Core Server Module -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-server</artifactId>
+        <version>${vaadin.version}</version>
+    </dependency>
 
-        <!-- Vaadin 8 Core Themes Module -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-themes</artifactId>
-            <version>8.14.3</version>
-        </dependency>
+    <!-- Vaadin 8 Core Themes Module -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-themes</artifactId>
+        <version>${vaadin.version}</version>
+    </dependency>
 
-        <!-- Vaadin 7 Compatibility Layer (Fixes com.vaadin.v7.* packages missing errors) -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-compatibility-server</artifactId>
-            <version>8.14.3</version>
-        </dependency>
+    <!-- Vaadin 7 Compatibility Layer -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-compatibility-server</artifactId>
+        <version>${vaadin.version}</version>
+    </dependency>
 
-        <!-- Apache Commons BeanUtils for data mapping utilities -->
-        <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.9.4</version>
-        </dependency>
-    </dependencies>
+    <!-- Vaadin 7 Compatibility Client Compiled (Crucial for Vaadin7WidgetSet) -->
+    <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-compatibility-client-compiled</artifactId>
+        <version>${vaadin.version}</version>
+    </dependency>
 
+    <!-- Apache Commons BeanUtils -->
+    <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>1.9.4</version>
+    </dependency>
+  </dependencies>
 
   <build>
     <finalName>addressbook</finalName>
@@ -75,6 +82,22 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.2.5</version>
       </plugin>
+      
+      <!-- Vaadin Maven Plugin to handle compiling the widgetset -->
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-maven-plugin</artifactId>
+        <version>${vaadin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>update-widgetset</goal>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
