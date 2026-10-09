@@ -84,10 +84,13 @@
       </plugin>
       
       <!-- Vaadin Maven Plugin to handle compiling the widgetset -->
-      <plugin>
+            <plugin>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-maven-plugin</artifactId>
         <version>${vaadin.version}</version>
+        <configuration>
+          <widgetset>com.vaadin.v7.Vaadin7WidgetSet</widgetset>
+        </configuration>
         <executions>
           <execution>
             <goals>
