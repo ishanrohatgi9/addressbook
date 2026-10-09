@@ -1,4 +1,4 @@
-## AddressBook - CI/CD Pipeline with Jenkins
+### AddressBook - CI/CD Pipeline with Jenkins
 
 A Java web application deployed through an end-to-end CI/CD pipeline using Jenkins.
 
