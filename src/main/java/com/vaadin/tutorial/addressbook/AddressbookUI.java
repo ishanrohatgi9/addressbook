@@ -24,10 +24,10 @@ import com.vaadin.v7.ui.TextField;
  * By default, a new UI instance is automatically created when the page is loaded. To reuse
  * the same instance, add @PreserveOnRefresh.
  */
-@Title("Addressbook")
+@Title("AddressBook - CI/CD Demo")
 @Theme("valo")
 @Widgetset("com.vaadin.v7.Vaadin7WidgetSet")
-public class AddressbookUI extends UI {
+public class AddressBook - Jenkins CI/CD DemoUI extends UI {
 
     /*
      * Hundreds of widgets. Vaadin's user interface components are just Java
@@ -142,7 +142,7 @@ public class AddressbookUI extends UI {
      * application.
      */
     @WebServlet(urlPatterns = "/*")
-    @VaadinServletConfiguration(ui = AddressbookUI.class, productionMode = false)
+    @VaadinServletConfiguration(ui = AddressBook - Jenkins CI/CD DemoUI.class, productionMode = false)
     public static class MyUIServlet extends VaadinServlet {
     }
 
