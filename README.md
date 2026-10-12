@@ -1,12 +1,13 @@
-### AddressBook - CI/CD Pipeline with Jenkins
+# AddressBook - CI/CD Pipeline with Jenkins and Docker
 
-A Java web application deployed through an end-to-end CI/CD pipeline using Jenkins.
+A Java web application deployed through an end-to-end CI/CD pipeline using Jenkins and Docker.
 
-The application is built with Maven, tested with JUnit, packaged as a WAR file and deployed to Apache Tomcat through separate Jenkins CI and CD jobs.
+The application is built with Maven, tested with JUnit, packaged as a WAR file, and deployed as a Docker container on an AWS EC2 instance. The pipeline is defined in a `Jenkinsfile` and automates the build, image publishing, deployment, and verification process.
 
-## What I built
+## What I Built
 
-The project uses Jenkins to automate delivery process:
+The project automates application delivery using Jenkins Pipeline as Code.
+
 ```text
 Developer
     |
@@ -14,53 +15,62 @@ Developer
   GitHub
     |
     v
-Jenkins Controller
+Jenkins Pipeline (Jenkinsfile)
     |
-    +------------------+
-    |                  |
-    v                  v
- CI Agent           CD Agent
-    |                  |
-    |-- Checkout       |
-    |-- Compile       |
-    |-- Test          |
-    |-- Package       |
-    |                  |
-    +-- addressbook.war
-                       |
-                       v
-                    Tomcat
-                       |
-                       v
-               Running Application
+    v
+  Compile
+    |
+    v
+   Test
+    |
+    v
+ Package WAR
+    |
+    v
+ Docker Build
+    |
+    v
+ Docker Hub
+    |
+    v
+ Deploy on AWS EC2
+    |
+    v
+ Docker Container
+    |
+    v
+HTTP Verification
 ```
-The CI and CD stages are separated so that the deployment job uses the WAR artifact produced by the build instead of rebuilding the application.
 
-## CI Pipeline
+The pipeline builds the application, creates a Docker image, publishes it to Docker Hub, and deploys the image as a container on the EC2 host.
 
-The CI side is divided into four Jenkins Freestyle jobs:
+## Pipeline Stages
 
-1. Checkout
-2. Compile
-3. Test
-4. Package
+The CI/CD workflow is defined in the repository's `Jenkinsfile`.
 
-The package job creates:
+1. **Compile:** Compile the Java application using Maven.
+2. **Test:** Run the application's JUnit tests.
+3. **Package:** Package the application as a WAR file.
+4. **Docker Build:** Build a Docker image containing the application.
+5. **Docker Push:** Publish the image to Docker Hub.
+6. **Deploy:** Run the application container on the EC2 deployment host.
+7. **Verification:** Check the application endpoint over HTTP.
 
-    target/addressbook.war
+## Docker Deployment
 
-The WAR file is then archived by Jenkins and used by the deployment job.
+The application is packaged as a WAR and deployed inside a Docker container.
 
-## CD Pipeline
+The pipeline builds and publishes the Docker image to Docker Hub. The deployment stage uses the image to run the application on AWS EC2.
 
-The deployment job:
+The container is named `addressbook`, with host port `8080` mapped to container port `8080`.
 
-1. Retrieves the archived WAR from Jenkins
-2. Copies it to the deployment server
-3. Removes the previous application version
-4. Deploys the new WAR to Apache Tomcat
-5. Checks the application endpoint
-6. Marks the deployment successful after receiving HTTP 200
+The application is available at:
+
+```text
+http://<EC2-PUBLIC-IP>:8080/addressbook/
+```
+
+The deployment process includes an HTTP check to verify that the application responds after deployment.
 
 ## Application
 
@@ -70,56 +80,31 @@ It contains:
 
 - Contact management classes
 - AddressBook logic
-- JUnit tests
 - Web UI
 - Maven build configuration
+- JUnit tests
 
-The application is packaged as a WAR and deployed under:
+The application is packaged as:
 
-    /addressbook/
+```text
+target/addressbook.war
+```
 
 ## Technologies
 
 - Java
 - Maven
 - JUnit
-- Git
-- GitHub
-- Jenkins
-- Jenkins Freestyle Jobs
+- Git and GitHub
+- Jenkins Pipeline
+- Jenkinsfile
+- Docker
+- Docker Hub
 - Apache Tomcat
+- AWS EC2
 - Linux
 - Bash
 - CI/CD
-
-## Jenkins Jobs
-
-| Job | Purpose |
-|---|---|
-| addressbook-ci-1-checkout | Checkout source code from GitHub |
-| addressbook-ci-2-compile | Compile the Java application |
-| addressbook-ci-3-test | Run JUnit tests |
-| addressbook-ci-4-package | Build and archive the WAR |
-| addressbook-cd | Deploy the WAR to Tomcat |
-
-## Testing
-
-The test stage runs the application's JUnit test suite through Maven.
-
-Latest successful run:
-
-Tests run: 5
-Failures: 0
-Errors: 0
-Skipped: 0
-
-## Deployment Verification
-
-The CD job performs an HTTP check after deployment.
-
-The deployment was verified with an HTTP 200 response.
-
-This allows the Jenkins job to fail if the application does not become available.
 
 ## Screenshots
 
@@ -127,48 +112,49 @@ This allows the Jenkins job to fail if the application does not become available
 
 ![Jenkins Pipeline](docs/jenkins-pipeline.png)
 
-### Test Results
+### Docker Hub Image
 
-![Test Results](docs/test-results.png)
+![Docker Hub Image](docs/dockerhub-image.png)
 
-### WAR Artifact
+### Running Docker Container
 
-![Build Artifact](docs/build-artifact.png)
+![Docker Container](docs/docker-container.png)
 
-### Deployment
+### Deployment Verification
 
-![Deployment](docs/deployment.png)
+![Deployment Verification](docs/deployment-verification.png)
 
 ### Application
 
-![AddressBook](addressbook_screenshot.png)
+![AddressBook Application](addressbook_screenshot.png)
 
 ## Project Structure
 
-    addressbook/
-    ├── src/
-    │   ├── main/
-    │   └── test/
-    ├── pom.xml
-    ├── .gitignore
-    ├── jenkins/
-    ├── deployment/
-    └── docs/
+```text
+addressbook/
+├── src/
+│   ├── main/
+│   └── test/
+├── Dockerfile
+├── Jenkinsfile
+├── pom.xml
+├── .gitignore
+├── addressbook_screenshot.png
+└── docs/
+```
 
-## What I learned
+## What I Learned
 
-- Configuring Jenkins Controller and agents
-- Running Jenkins jobs on specific agents
-- Using Maven for Java builds
-- Running automated tests through Jenkins
-- Creating and archiving WAR artifacts
-- Passing artifacts between Jenkins jobs
-- Deploying applications to Apache Tomcat
-- Adding deployment verification to a CI/CD workflow
-- Separating CI and CD responsibilities
+- Defining CI/CD workflows using a Jenkinsfile
+- Automating Maven builds and JUnit test execution
+- Building and publishing Docker images
+- Deploying containerized applications on AWS EC2
+- Configuring Docker port mappings
+- Verifying deployments through HTTP checks
+- Separating application build and deployment stages
 
 ## Future Improvements
 
-The current implementation uses Jenkins Freestyle jobs to make each stage of the CI/CD process visible.
-
-The next step is to convert the same workflow to a Jenkinsfile and implement the pipeline as code.
+- Add automated image vulnerability scanning.
+- Improve deployment rollback handling.
+- Integrate pipeline notifications for build and deployment failures.
