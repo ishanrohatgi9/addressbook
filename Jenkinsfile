@@ -1,97 +1,115 @@
 pipeline {
-	
-	agent {
-		label 'AgentB'
-	}
 
-	environment {
-		DOCKER_IMAGE = 'ishanrohatgi/addressbook'
-		CONTAINER_NAME = 'addressbook'
-		HOST_PORT = '8080'
-		CONTAINER_PORT = '8080'
-	}	
+    agent {
+        label 'AgentB'
+    }
 
-	stages {
+    environment {
+        DOCKER_IMAGE   = 'ishanrohatgi/addressbook'
+        CONTAINER_NAME = 'addressbook'
+        HOST_PORT      = '8080'
+        CONTAINER_PORT = '8080'
+    }
 
-		stage('Compile') {
-			sh '''
-				echo "====COMPILE====="
-				mvn -B clean compile
-			'''
-		}
+    stages {
 
+        stage('Compile') {
+            steps {
+                sh '''
+                    echo "===== COMPILE ====="
+                    mvn -B clean compile
+                '''
+            }
+        }
 
-		stage('Test') {
-			sh '''
-				echo "====TEST===="
-				mvn -B test
-			'''
-		}
+        stage('Test') {
+            steps {
+                sh '''
+                    echo "===== TEST ====="
+                    mvn -B test
+                '''
+            }
+        }
 
-		stage('Package') {
-			sh ''' 
-				echo "=====PACKAGE======"
-				mvn -B package -DskipTests
-				ls -lh target/addressbook.war
-			'''
-		}
+        stage('Package') {
+            steps {
+                sh '''
+                    echo "===== PACKAGE ====="
+                    mvn -B package -DskipTests
+                    ls -lh target/addressbook.war
+                '''
+            }
+        }
 
-		stage('Docker Build') {
-			sh '''
-				echo "====DOCKER BUILD===="
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    echo "===== DOCKER BUILD ====="
 
-				docker build \
-				 -t ${DOCKER_IMAGE} : ${BUILD_NUMBER} \
-				 -t ${DOCKER_IMAGE} : latest \
-			'''
-		}
+                    docker build \
+                        -t ${DOCKER_IMAGE}:${BUILD_NUMBER} \
+                        -t ${DOCKER_IMAGE}:latest \
+                        .
 
-		stage('Docker login and push') {
-			steps {
-				withCredentials([
-					usernamePassword(
-						credentialsId: 'dockerhub-creds'
-						usernameVariable: 'DOCKER_USERNAME'
-						passwordVariable: 'DOCKER_PASSWORD' 
-					)
-				]) {
-					sh '''
-						echo "====DOCKER LOGIN===="
+                    echo "===== BUILD COMPLETE ====="
+                    docker images ${DOCKER_IMAGE}
+                '''
+            }
+        }
 
-						echo "$DOCKER_PASSWORD" | docker login \
-							-u "$DOCKER_USERNAME" \
-							--password-stdin 
+        stage('Docker Login and Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        set -e
 
-						echo "====DOCKER PUSH===="
-						docker push $(DOCKER_IMAGE):$(BUILD_NUMBER)
-						docker push $(DOCKER_IMAGE): latest
+                        echo "===== DOCKER LOGIN ====="
 
-						docker logout
-					'''
-				}
-			}
-		}
+                        echo "$DOCKER_PASSWORD" | docker login \
+                            -u "$DOCKER_USERNAME" \
+                            --password-stdin
 
-		stage('Deploy Container') {
-			steps {
-				sh '''	
-					echo "====DOCKER DEPLOY CONTAINER====''
-					docker rm -f ${CONTAINER_NAME} || true
-					docker pull ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                        echo "===== DOCKER PUSH ====="
 
-					docker run -d \
-					--name ${CONTAINER_NAME} \
-					-p ${HOST_PORT}:${CONTAINER_PORT} \
-					${DOCKER_IMAGE}:${BUILD_NUMBER}
+                        docker push "${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                        docker push "${DOCKER_IMAGE}:latest"
 
-					echo "====CONTAINER===="
+                        echo "===== IMAGE PUSHED SUCCESSFULLY ====="
 
-					docker ps 
-				'''
-			}
-			
-		}
+                        docker logout
+                    '''
+                }
+            }
+        }
 
-	}
-}	
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                    set -e
+
+                    echo "===== DOCKER DEPLOY ====="
+
+                    docker rm -f ${CONTAINER_NAME} || true
+
+                    docker pull ${DOCKER_IMAGE}:${BUILD_NUMBER}
+
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        --restart unless-stopped \
+                        -p ${HOST_PORT}:${CONTAINER_PORT} \
+                        ${DOCKER_IMAGE}:${BUILD_NUMBER}
+
+                    echo "===== CONTAINER STATUS ====="
+
+                    docker ps --filter name=${CONTAINER_NAME}
+                '''
+            }
+        }
+    }
 
